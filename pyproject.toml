@@ -1,0 +1,22 @@
+[project]
+name = "emailgenerator"
+version = "0.1.0"
+authors = [
+  { name="Subject_Alpha", email="contact@jacobstarr.me" },
+]
+description = "An email list generator that creates a list based on the most popular names and common number combinations"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+]
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+[project.urls]
+"Homepage" = "https://github.com/SubjectAlpha/emailgenerator"
+"Bug Tracker" = "https://github.com/SubjectAlpha/emailgenerator/issues"
+[project.scripts]
+emailgenerator = "emailgenerator:main"

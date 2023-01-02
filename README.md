@@ -7,7 +7,7 @@ This will generate a text file of emails based on the most popular first names a
 ## Installation
 
 -   [Clone from Github](https://github.com/SubjectAlpha/emailgenerator)
--   [Download from PyPi](https://pypi.org/project/emailgenerator/0.1.0/)
+-   [Download from PyPi](https://pypi.org/project/emailgenerator/)
 
 ## Usage
 

@@ -11,6 +11,27 @@ USER_HOSTS = ""
 INCLUDE_YEARS = False
 INCLUDE_NUMBERS = False
 
+HELP_FLAG = "-h"
+HOST_FLAG = "-d"
+GENERATE_FLAG = "-g"
+SIZE_FLAG = "-s"
+YEARS_FLAG = "-y"
+NUMBERS_FLAG = "-n"
+OUTPUT_FLAG = "-o"
+
+def display_help():
+    help_messages = [
+        f"{HELP_FLAG} for help",
+        f"{GENERATE_FLAG} to generate a new bulk list",
+        f"{SIZE_FLAG} to set chunk size DEFAULT:20000",
+        f"{HOST_FLAG} to enter a cvs list of desired email hosts DEFAULT: gmail.com, hotmail.com, outlook.com",
+        f"{NUMBERS_FLAG} to include numbers 0-100 to cover common sports numbers and year abbreviations that may are likely to be included in email",
+        f"{YEARS_FLAG} to include years 1950-2050 for common graduation/birth years in email"
+    ]
+
+    for msg in help_messages:
+        print(f"\t{msg}")
+
 def get_names():
     first_names = ["james", "robert", "michael", "david", "william", "richard", 
         "dick", "joseph", "joe", "thomas", "tom", "charles", "chuck", "christopher", "chris",
@@ -117,53 +138,37 @@ def generate_email_list():
 
 def main():
     if len(sys.argv) > 1:
-        help_flag = "-h"
-        host_flag = "-d"
-        generate_flag = "-g"
-        size_flag = "-s"
-        years_flag = "-y"
-        numbers_flag = "-n"
-        output_flag = "-o"
-
-        help_messages = [
-            f"{help_flag} for help",
-            f"{generate_flag} to generate a new bulk list",
-            f"{size_flag} to set chunk size DEFAULT:20000",
-            f"{host_flag} to enter a cvs list of desired email hosts DEFAULT: gmail.com, hotmail.com, outlook.com",
-            f"{numbers_flag} to include numbers 0-100 to cover common sports numbers and year abbreviations that may are likely to be included in email",
-            f"{years_flag} to include years 1950-2050 for common graduation/birth years in email"
-        ]
-        
-        if help_flag in sys.argv:
-            for msg in help_messages:
-                print(msg)
+        if HELP_FLAG in sys.argv:
+            display_help()
             return
 
-        if host_flag in sys.argv:
-            if not generate_flag in sys.argv:
-                print(f"You must use the {generate_flag} flag to use the {host_flag} flag")
+        if HOST_FLAG in sys.argv:
+            if not GENERATE_FLAG in sys.argv:
+                print(f"You must use the {GENERATE_FLAG} flag to use the {HOST_FLAG} flag")
                 exit()
 
             USE_DEFAULT_HOSTS = False
-            USER_HOSTS = sys.argv[sys.argv.index(host_flag) + 1]
+            USER_HOSTS = sys.argv[sys.argv.index(HOST_FLAG) + 1]
 
-        if output_flag in sys.argv:
-            output_dir = sys.argv[sys.argv.index(output_flag) + 1]
+        if OUTPUT_FLAG in sys.argv:
+            output_dir = sys.argv[sys.argv.index(OUTPUT_FLAG) + 1]
             if not os.path.exists(output_dir):
                 os.mkdir(output_dir)
             STORAGE_PATH = output_dir
             GENERATED_FILE = f"{STORAGE_PATH}generated_emails.txt"
 
-        if size_flag in sys.argv:
-            CHUNK_SIZE = sys.argv[sys.argv.index(size_flag) + 1]
+        if SIZE_FLAG in sys.argv:
+            CHUNK_SIZE = sys.argv[sys.argv.index(SIZE_FLAG) + 1]
 
-        if numbers_flag in sys.argv:
+        if NUMBERS_FLAG in sys.argv:
             INCLUDE_NUMBERS = True
 
-        if years_flag in sys.argv:
+        if YEARS_FLAG in sys.argv:
             INCLUDE_YEARS = True
 
-        if generate_flag in sys.argv:
+        if GENERATE_FLAG in sys.argv:
             generate_email_list()
     
         disperse_emails()
+    else:
+        display_help()

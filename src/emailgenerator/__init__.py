@@ -47,13 +47,13 @@ def get_names():
         "susan", "sue", "jessica", "jess", "sarah", "sara", "karen", "lisa", "nancy", "betty", "margaret", "sandra", "ashley",
         "kimberly", "emily", "donna", "michelle", "carol", "amanda", "dorothy", "melissa", "deborah", "stephanie", "rebecca",
         "sharon", "laura", "cynthia", "kathleen", "amy", "angela", "shirley", "anna", "brenda", "pamela", "emma", "nicole",
-        "helen", "samantha", "sam", "katherine", "kat", "christine", "debra", "rachel", "carolyn", "janet", "catherine",
+        "helen", "samantha", "sam", "katherine", "kat", "caitlin", "kaitlyn", "kaitlin", "kate", "katie", "christine", "debra", "rachel", "carolyn", "janet", "catherine",
         "maria", "heather", "diane", "ruth", "julie", "olivia", "joyce", "virginia", "victoria", "kelly", "lauren",
         "christina", "joan", "evelyn", "judith", "megan", "andrea", "cheryl", "hannah", "jacqueline", "jackie", "martha",
         "gloria", "teresa", "ann", "anne", "madison", "frances", "kathryn", "janice", "jean", "abigail", "abby",
         "alice", "julia", "judy", "sophia", "sophie", "grace", "denise", "amber", "doris", "marilyn", "danielle",
         "beverly", "bev", "isabelle", "belle", "theresa", "diana", "natalie", "brittany", "charlotte", "marie",
-        "kayla", "alexis", "lori"] #https://www.ssa.gov/oact/babynames/decades/century.html
+        "kayla", "alexis", "lori"]
     
     last_names = ["wang", "smith", "devi", "ivanov", "kim", "ali", "garcia", "muller", "silva", "dasilva", "mohammed",
         "tesfaye", "nguyen", "ilunga", "gonzalez", "deng", "rodriguez", "moyo", "hansen", "zhang", "johnson", "williams",
@@ -65,29 +65,26 @@ def get_names():
         "murphy", "cook", "rogers", "gutierrez", "ortiz", "morgan", "cooper", "peterson", "bailey", "reed", "kelly",
         "howard", "ramos", "kim", "cox", "ward", "richardson", "watson", "brooks", "chavez", "wood", "james",
         "bennet", "grey", "mendoza", "ruiz", "hughes", "price", "alvarez", "catillo", "sanders", "patel", "myers", 
-        "ross", "foster", "jimenez"] #https://www.thoughtco.com/most-common-us-surnames-1422656
+        "ross", "foster", "jimenez"]
     
     return [(a, b) for a in first_names for b in last_names]
 
 def create_email_usernames(name_pair, include_numbers, include_years):
-    if (type(name_pair) is tuple) or (type(name_pair) is list):
-        possible_combinations = [f"{name_pair[0]}{name_pair[1]}", f"{name_pair[0]}.{name_pair[1]}"]
+    possible_combinations = [f"{name_pair[0]}{name_pair[1]}", f"{name_pair[0]}.{name_pair[1]}"]
 
-        if include_numbers:
-            #cover smaller numbers like sports numbers and abbreviated years
-            for i in range(0,100):
-                possible_combinations.append(f"{name_pair[0]}.{name_pair[1]}{i}")
-                possible_combinations.append(f"{name_pair[0]}{name_pair[1]}{i}")
-        
-        if include_years:
-            #cover from 1950-2050 for birth years and grad years
-            for i in range(1950, 2050):
-                possible_combinations.append(f"{name_pair[0]}.{name_pair[1]}{i}")
-                possible_combinations.append(f"{name_pair[0]}{name_pair[1]}{i}")
+    if include_numbers:
+        #cover smaller numbers like sports numbers and abbreviated years
+        for i in range(0,100):
+            possible_combinations.append(f"{name_pair[0]}.{name_pair[1]}{i}")
+            possible_combinations.append(f"{name_pair[0]}{name_pair[1]}{i}")
+    
+    if include_years:
+        #cover from 1950-2050 for birth years and grad years
+        for i in range(1950, 2050):
+            possible_combinations.append(f"{name_pair[0]}.{name_pair[1]}{i}")
+            possible_combinations.append(f"{name_pair[0]}{name_pair[1]}{i}")
 
-        return possible_combinations
-    else:
-        return name_pair
+    return possible_combinations
 
 def write_file(storage_path, data, chunk_count):
     filename = f"{storage_path}email_list_{chunk_count}.txt"

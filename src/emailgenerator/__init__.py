@@ -3,30 +3,26 @@ Notice: Currently this will generate around 36,205,000 possible emails if all fl
 '''
 import os, sys
 
-STORAGE_PATH = f"{os.getcwd()}/emails/"
-GENERATED_FILE = f"{STORAGE_PATH}generated_emails.txt"
-CHUNK_SIZE = 20000
-USE_DEFAULT_HOSTS = True
-USER_HOSTS = ""
-INCLUDE_YEARS = False
-INCLUDE_NUMBERS = False
-
-HELP_FLAG = "-h"
-HOST_FLAG = "-d"
-GENERATE_FLAG = "-g"
-SIZE_FLAG = "-s"
-YEARS_FLAG = "-y"
-NUMBERS_FLAG = "-n"
-OUTPUT_FLAG = "-o"
+help_flag = "-h"
+host_flag = "-d"
+generate_flag = "-g"
+size_flag = "-s"
+years_flag = "-y"
+numbers_flag = "-n"
+output_flag = "-o"
+wordlist_flag = "-w"
+distribute_flag = "-b"
 
 def display_help():
     help_messages = [
-        f"{HELP_FLAG} for help",
-        f"{GENERATE_FLAG} to generate a new bulk list",
-        f"{SIZE_FLAG} to set chunk size DEFAULT:20000",
-        f"{HOST_FLAG} to enter a cvs list of desired email hosts DEFAULT: gmail.com, hotmail.com, outlook.com",
-        f"{NUMBERS_FLAG} to include numbers 0-100 to cover common sports numbers and year abbreviations that may are likely to be included in email",
-        f"{YEARS_FLAG} to include years 1950-2050 for common graduation/birth years in email"
+        f"{help_flag} for help",
+        f"{generate_flag} to generate a new bulk list",
+        f"{size_flag} to set chunk size DEFAULT:20000",
+        f"{host_flag} to enter a cvs list of desired email hosts DEFAULT: gmail.com, hotmail.com, outlook.com",
+        f"{numbers_flag} to include numbers 0-100 to cover common sports numbers and year abbreviations that may are likely to be included in email",
+        f"{years_flag} to include years 1950-2050 for common graduation/birth years in email",
+        f"{wordlist_flag} to include a wordlist of usernames to use instead of most popular names",
+        f"{distribute_flag} to distribute the existing generated list into smaller files. Set filesize using the {size_flag} flag"
     ]
 
     for msg in help_messages:
@@ -73,102 +69,174 @@ def get_names():
     
     return [(a, b) for a in first_names for b in last_names]
 
-def add_arbitrary_numbers(name_pair):
-    possible_combinations = [f"{name_pair[0]}{name_pair[1]}", f"{name_pair[0]}.{name_pair[1]}"]
+def create_email_usernames(name_pair, include_numbers, include_years):
+    if (type(name_pair) is tuple) or (type(name_pair) is list):
+        possible_combinations = [f"{name_pair[0]}{name_pair[1]}", f"{name_pair[0]}.{name_pair[1]}"]
 
-    if INCLUDE_NUMBERS:
-        #cover smaller numbers like sports numbers and abbreviated years
-        for i in range(0,100):
-            possible_combinations.append(f"{name_pair[0]}.{name_pair[1]}{i}")
-            possible_combinations.append(f"{name_pair[0]}{name_pair[1]}{i}")
-    
-    if INCLUDE_YEARS:
-        #cover from 1950-2050 for birth years and grad years
-        for i in range(1950, 2050):
-            possible_combinations.append(f"{name_pair[0]}.{name_pair[1]}{i}")
-            possible_combinations.append(f"{name_pair[0]}{name_pair[1]}{i}")
+        if include_numbers:
+            #cover smaller numbers like sports numbers and abbreviated years
+            for i in range(0,100):
+                possible_combinations.append(f"{name_pair[0]}.{name_pair[1]}{i}")
+                possible_combinations.append(f"{name_pair[0]}{name_pair[1]}{i}")
+        
+        if include_years:
+            #cover from 1950-2050 for birth years and grad years
+            for i in range(1950, 2050):
+                possible_combinations.append(f"{name_pair[0]}.{name_pair[1]}{i}")
+                possible_combinations.append(f"{name_pair[0]}{name_pair[1]}{i}")
 
-    return possible_combinations
+        return possible_combinations
+    else:
+        return name_pair
 
-def write_file(data, chunk_count):
-    filename = f"{STORAGE_PATH}email_list_{chunk_count}.txt"
-    try:
-        with open(filename, "w") as nf:
-            nf.writelines(data)
-    except:
-        print("There was a problem writing to the file")
+def write_file(storage_path, data, chunk_count):
+    filename = f"{storage_path}email_list_{chunk_count}.txt"
+    with open(filename, "w") as nf:
+        nf.writelines(data)
 
-def disperse_emails():
+def read_wordlist(path):
+    names = []
+    with open(path, "r") as f:
+        for l in f.readlines():
+            names.append(l)
+    return names
+
+def distribute_emails(file_path, storage_path, chunk_size): 
     chunk_count = 1
     line_count = 0
 
-    if os.path.exists(GENERATED_FILE):
-        with open(GENERATED_FILE, "r") as f:
+    try:
+        with open(file_path, "r") as f:
             buffered_string = ""
             for line in f.readlines():
-                if line_count < int(CHUNK_SIZE):
+                if line_count < int(chunk_size):
                     buffered_string += line
                     line_count += 1
                 else:
-                    write_file(buffered_string, chunk_count)
+                    write_file(storage_path, buffered_string, chunk_count)
                     buffered_string = ""
                     line_count = 0
                     chunk_count += 1
-    else:
+            write_file(storage_path, buffered_string, chunk_count) #This writes the last of the buffer to a final file
+        return 1
+    except FileNotFoundError:
         print("Email list file not found. Please use -g flag to generate a new one.")
+        return -1
+    except Exception as e:
+        print("An unexpected error ocurred when breaking up the existing email list")
+        print(e)
+        return -1
 
-def generate_email_list():
-    default_email_hosts = ["gmail.com", "outlook.com", "hotmail.com"]
-    all_possible_names = get_names()
+def generate_email_list(
+    file_path, 
+    storage_path, 
+    use_wordlist, 
+    wordlist_path, 
+    use_default_hosts, 
+    user_hosts, 
+    include_years, 
+    include_numbers):
+    
+    all_possible_names = []
 
-    if not os.path.exists(STORAGE_PATH):
-        os.mkdir(STORAGE_PATH)
+    try:
+        if use_wordlist:
+            all_possible_names = read_wordlist(wordlist_path)
+        else:
+            all_possible_names = get_names()
 
-    with open(GENERATED_FILE, "w") as f:
+        hosts = ["gmail.com", "outlook.com", "hotmail.com"]
+
+        if not use_default_hosts:
+            hosts = user_hosts.split(',')
+
+        if not os.path.exists(storage_path):
+            os.mkdir(storage_path)
+            
+        buffer = []
         for names in all_possible_names:
-            bastardized_names = add_arbitrary_numbers(names)
-            for name in bastardized_names:
-                if USE_DEFAULT_HOSTS:
-                    for host in default_email_hosts:
-                        f.write(f"{name}@{host}\n")
-                else:
-                    hosts = USER_HOSTS.split(',')
+            if (type(all_possible_names[0]) is tuple) or (type(all_possible_names[0]) is list):
+                for name in create_email_usernames(names, include_numbers, include_years):
                     for host in hosts:
-                        f.write(f"{name}@{host}\n")
+                        buffer.append(f"{name}@{host}\n")
+            else:
+                name = str(names).strip("\n")
+                for host in hosts:
+                    buffer.append(f"{name}@{host}\n")
 
-def main():
+        with open(file_path, "w") as f:
+            f.writelines(buffer)
+
+        return 1
+    except:
+        print("An unexpected error ocurred generating the email list")
+        return -1
+
+def main(
+    storage_path = f"{os.getcwd()}/emails/",
+    generated_file_path = f"{os.getcwd()}/emails/generated_emails.txt",
+    chunk_size = 20000,
+    use_default_hosts = True,
+    user_hosts = "",
+    include_years = False,
+    include_numbers = False,
+    use_wordlist = False,
+    wordlist_path = "",
+    test_flag_create=False,
+    test_flag_distribute=False):
+
     if len(sys.argv) > 1:
-        if HELP_FLAG in sys.argv:
+        if help_flag in sys.argv:
             display_help()
-            return
+            return 1
 
-        if HOST_FLAG in sys.argv:
-            if not GENERATE_FLAG in sys.argv:
-                print(f"You must use the {GENERATE_FLAG} flag to use the {HOST_FLAG} flag")
-                exit()
+        if host_flag in sys.argv:
+            if not generate_flag in sys.argv:
+                print(f"You must use the {generate_flag} flag to use the {host_flag} flag")
+                return -1
 
-            USE_DEFAULT_HOSTS = False
-            USER_HOSTS = sys.argv[sys.argv.index(HOST_FLAG) + 1]
+            use_default_hosts = False
+            user_hosts = sys.argv[sys.argv.index(host_flag) + 1]
 
-        if OUTPUT_FLAG in sys.argv:
-            output_dir = sys.argv[sys.argv.index(OUTPUT_FLAG) + 1]
+        if output_flag in sys.argv:
+            output_dir = sys.argv[sys.argv.index(output_flag) + 1]
             if not os.path.exists(output_dir):
                 os.mkdir(output_dir)
-            STORAGE_PATH = output_dir
-            GENERATED_FILE = f"{STORAGE_PATH}generated_emails.txt"
+            storage_path = output_dir
+            generated_file_path = f"{storage_path}generated_emails.txt"
 
-        if SIZE_FLAG in sys.argv:
-            CHUNK_SIZE = sys.argv[sys.argv.index(SIZE_FLAG) + 1]
+        if size_flag in sys.argv:
+            chunk_size = sys.argv[sys.argv.index(size_flag) + 1]
 
-        if NUMBERS_FLAG in sys.argv:
-            INCLUDE_NUMBERS = True
+        if numbers_flag in sys.argv:
+            include_numbers = True
 
-        if YEARS_FLAG in sys.argv:
-            INCLUDE_YEARS = True
+        if years_flag in sys.argv:
+            include_years = True
 
-        if GENERATE_FLAG in sys.argv:
-            generate_email_list()
-    
-        disperse_emails()
+        if wordlist_flag in sys.argv:
+            use_wordlist = True
+            wordlist_path = sys.argv[sys.argv.index(wordlist_flag) + 1]
+
+        if (generate_flag in sys.argv) or test_flag_create:
+            print("Generating email list...")
+            return generate_email_list(
+                generated_file_path, 
+                storage_path, 
+                use_wordlist,
+                wordlist_path, 
+                use_default_hosts, 
+                user_hosts,
+                include_years,
+                include_numbers
+            )
+
+        if (distribute_flag in sys.argv) or test_flag_distribute:
+            print("Breaking up existing email list...")
+            return distribute_emails(generated_file_path, storage_path, chunk_size)
+
+        print("It doesn't look like you used a flag I know. Use -h to get help")
+        return -1
     else:
         display_help()
+        return -1

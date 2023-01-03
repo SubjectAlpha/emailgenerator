@@ -1,6 +1,6 @@
 [project]
 name = "emailgenerator"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
   { name="Subject_Alpha", email="contact@jacobstarr.me" },
 ]

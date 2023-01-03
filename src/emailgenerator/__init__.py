@@ -3,26 +3,26 @@ Notice: Currently this will generate around 36,205,000 possible emails if all fl
 '''
 import os, sys
 
-help_flag = "-h"
-host_flag = "-d"
-generate_flag = "-g"
-size_flag = "-s"
-years_flag = "-y"
-numbers_flag = "-n"
-output_flag = "-o"
-wordlist_flag = "-w"
-distribute_flag = "-b"
+HELP_FLAG = "-h"
+HOST_FLAG = "-d"
+GENERATE_FLAG = "-g"
+SIZE_FLAG = "-s"
+YEARS_FLAG = "-y"
+NUMBERS_FLAG = "-n"
+OUTPUT_FLAG = "-o"
+WORDLIST_FLAG = "-w"
+DISTRIBUTE_FLAG = "-b"
 
 def display_help():
     help_messages = [
-        f"{help_flag} for help",
-        f"{generate_flag} to generate a new bulk list",
-        f"{size_flag} to set chunk size DEFAULT:20000",
-        f"{host_flag} to enter a cvs list of desired email hosts DEFAULT: gmail.com, hotmail.com, outlook.com",
-        f"{numbers_flag} to include numbers 0-100 to cover common sports numbers and year abbreviations that may are likely to be included in email",
-        f"{years_flag} to include years 1950-2050 for common graduation/birth years in email",
-        f"{wordlist_flag} to include a wordlist of usernames to use instead of most popular names",
-        f"{distribute_flag} to distribute the existing generated list into smaller files. Set filesize using the {size_flag} flag"
+        f"{HELP_FLAG} for help",
+        f"{GENERATE_FLAG} to generate a new bulk list",
+        f"{SIZE_FLAG} to set chunk size DEFAULT:20000",
+        f"{HOST_FLAG} to enter a cvs list of desired email hosts DEFAULT: gmail.com, hotmail.com, outlook.com",
+        f"{NUMBERS_FLAG} to include numbers 0-100 to cover common sports numbers and year abbreviations that may are likely to be included in email",
+        f"{YEARS_FLAG} to include years 1950-2050 for common graduation/birth years in email",
+        f"{WORDLIST_FLAG} to include a wordlist of usernames to use instead of most popular names",
+        f"{DISTRIBUTE_FLAG} to distribute the existing generated list into smaller files. Set filesize using the {SIZE_FLAG} flag"
     ]
 
     for msg in help_messages:
@@ -173,8 +173,10 @@ def generate_email_list(
         return -1
 
 def main(
+    test_flag_create=False,
+    test_flag_distribute=False):
     storage_path = f"{os.getcwd()}/emails/",
-    generated_file_path = f"{os.getcwd()}/emails/generated_emails.txt",
+    generated_file_path = f"{storage_path}/generated_emails.txt",
     chunk_size = 20000,
     use_default_hosts = True,
     user_hosts = "",
@@ -182,43 +184,41 @@ def main(
     include_numbers = False,
     use_wordlist = False,
     wordlist_path = "",
-    test_flag_create=False,
-    test_flag_distribute=False):
 
     if len(sys.argv) > 1:
-        if help_flag in sys.argv:
+        if HELP_FLAG in sys.argv:
             display_help()
             return 1
 
-        if host_flag in sys.argv:
-            if not generate_flag in sys.argv:
-                print(f"You must use the {generate_flag} flag to use the {host_flag} flag")
+        if HOST_FLAG in sys.argv:
+            if not GENERATE_FLAG in sys.argv:
+                print(f"You must use the {GENERATE_FLAG} flag to use the {HOST_FLAG} flag")
                 return -1
 
             use_default_hosts = False
-            user_hosts = sys.argv[sys.argv.index(host_flag) + 1]
+            user_hosts = sys.argv[sys.argv.index(HOST_FLAG) + 1]
 
-        if output_flag in sys.argv:
-            output_dir = sys.argv[sys.argv.index(output_flag) + 1]
+        if OUTPUT_FLAG in sys.argv:
+            output_dir = sys.argv[sys.argv.index(OUTPUT_FLAG) + 1]
             if not os.path.exists(output_dir):
                 os.mkdir(output_dir)
             storage_path = output_dir
             generated_file_path = f"{storage_path}generated_emails.txt"
 
-        if size_flag in sys.argv:
-            chunk_size = sys.argv[sys.argv.index(size_flag) + 1]
+        if SIZE_FLAG in sys.argv:
+            chunk_size = sys.argv[sys.argv.index(SIZE_FLAG) + 1]
 
-        if numbers_flag in sys.argv:
+        if NUMBERS_FLAG in sys.argv:
             include_numbers = True
 
-        if years_flag in sys.argv:
+        if YEARS_FLAG in sys.argv:
             include_years = True
 
-        if wordlist_flag in sys.argv:
+        if WORDLIST_FLAG in sys.argv:
             use_wordlist = True
-            wordlist_path = sys.argv[sys.argv.index(wordlist_flag) + 1]
+            wordlist_path = sys.argv[sys.argv.index(WORDLIST_FLAG) + 1]
 
-        if (generate_flag in sys.argv) or test_flag_create:
+        if (GENERATE_FLAG in sys.argv) or test_flag_create:
             print("Generating email list...")
             return generate_email_list(
                 generated_file_path, 
@@ -231,7 +231,7 @@ def main(
                 include_numbers
             )
 
-        if (distribute_flag in sys.argv) or test_flag_distribute:
+        if (DISTRIBUTE_FLAG in sys.argv) or test_flag_distribute:
             print("Breaking up existing email list...")
             return distribute_emails(generated_file_path, storage_path, chunk_size)
 
